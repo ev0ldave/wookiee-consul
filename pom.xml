@@ -110,6 +110,7 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.artifact.version}</artifactId>
             <version>2.2.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scalacheck</groupId>
@@ -173,7 +174,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.7</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <skipTests>false</skipTests>
+                    <disableXmlReport>false</disableXmlReport>
+                    <useFile>false</useFile>
+                    <includes>
+                        <include>**/*Spec.*</include>
+                    </includes>
                 </configuration>
             </plugin>
             <plugin>
@@ -199,7 +205,7 @@
                 <version>2.4</version>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <finalName>wookiee-component-archetype-${version}</finalName>
+                    <finalName>wookiee-component-archetype-${project.version}</finalName>
                     <descriptors>
                         <descriptor>src/main/assembly/dep.xml</descriptor>
                     </descriptors>
@@ -245,7 +251,7 @@
                 <configuration>
                     <highlighting>true</highlighting>
                     <minimumCoverage>30</minimumCoverage>
-                    <failOnMinimumCoverage>true</failOnMinimumCoverage>
+                    <failOnMinimumCoverage>false</failOnMinimumCoverage>
                 </configuration>
                 <executions>
                     <execution>
