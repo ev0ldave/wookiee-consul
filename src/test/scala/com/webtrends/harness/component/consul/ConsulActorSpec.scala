@@ -2,10 +2,10 @@ package com.webtrends.harness.component.consul
 
 import akka.testkit.{TestProbe, TestActorRef}
 
-class ConsulActorSpec extends ConsulBaseSpec {
+class ConsulActorSpec extends ConsulTestBase {
 
   val probe = new TestProbe(actorSystem)
-  val actor:TestActorRef[ConsulActor] = TestActorRef[ConsulActor] (ConsulActor.props())
+  val actor:TestActorRef[ConsulActor] = TestActorRef[ConsulActor] (ConsulActor.props(ConsulSettings(actorSystem.settings.config.getConfig("wookiee-consul"))))
 
   Thread.sleep(2000)
 
@@ -14,36 +14,35 @@ class ConsulActorSpec extends ConsulBaseSpec {
   "wookiee-consul actor" should {
 
     "be able to set key" in {
-      probe.send(actor, KvSet("key1", "foo"))
+      probe.send(actor, KvSet("foo", "bar"))
       probe.expectMsgPF() {
         case r: Boolean =>
           r mustEqual true
       }
     }
 
-    "be able to get a key and equal foo" in {
-      probe.send(actor, KvGet("key1"))
+    "be able to get a key and equal bar" in {
+      probe.send(actor, KvGet("foo"))
       probe.expectMsgPF() {
         case r: String =>
-          r mustEqual "foo"
+          r mustEqual "bar"
       }
     }
 
-    "be able to delete key" in {
-      probe.send(actor, KvDelete("key1"))
+    "be able to list keys" in {
+      probe.send(actor, KvListKeys(""))
+      probe.expectMsgPF() {
+        case r: String =>
+          r contains "foo"
+      }
+    }
+
+    "be able to delete a key" in {
+      probe.send(actor, KvDelete("foo"))
       probe.expectMsgPF() {
         case r: Boolean =>
-          r mustEqual true
+          r mustEqual false
       }
-
     }
-
-    /*"fail with a get key" in {
-      probe.send(actor, GetKey("key1"))
-      probe.expectMsgPF() {
-        case Failure(t) =>
-          throwA(t)
-      }
-    }*/
   }
 }

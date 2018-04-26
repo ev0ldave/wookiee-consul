@@ -4,7 +4,7 @@ import akka.testkit.TestProbe
 import com.webtrends.harness.health.{ComponentState, HealthComponent}
 import com.webtrends.harness.service.messages.CheckHealth
 
-class ConsulManagerSpec extends ConsulBaseSpec {
+class ConsulTestManager extends ConsulTestBase {
 
   "ConsulManager" should {
     "be ready" in {
