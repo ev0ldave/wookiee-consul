@@ -16,8 +16,8 @@ class ConsulActorSpec extends ConsulTestBase {
     "be able to set key" in {
       probe.send(actor, KvSet("foo", "bar"))
       probe.expectMsgPF() {
-        case r: Boolean =>
-          r mustEqual true
+        case r: String =>
+          r mustEqual ""
       }
     }
 
@@ -32,8 +32,8 @@ class ConsulActorSpec extends ConsulTestBase {
     "be able to list keys" in {
       probe.send(actor, KvListKeys(""))
       probe.expectMsgPF() {
-        case r: String =>
-          r contains "foo"
+        case r: Set[String] =>
+          r.contains("foo")
       }
     }
 

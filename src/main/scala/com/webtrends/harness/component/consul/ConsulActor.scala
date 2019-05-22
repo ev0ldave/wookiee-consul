@@ -7,6 +7,7 @@ import helm._
 import helm.ConsulOp
 import helm.http4s._
 import org.http4s._
+import org.http4s.client._
 import scalaz.concurrent.Task
 import scalaz.NonEmptyList
 import org.http4s.client.blaze.PooledHttp1Client
@@ -19,26 +20,25 @@ class ConsulActor(settings: ConsulSettings) extends HActor with ComponentHelper{
 
   val client = PooledHttp1Client()
   val baseUri:Uri = Uri.fromString(settings.ConsulEndpoint).valueOr(throw _)
-
   def interpreter = new Http4sConsulClient(baseUri, client)
 
   override def receive = super.receive orElse {
 
     case KvSet(key: String, value: String) =>
       val task: Task[Unit] = helm.run(interpreter, ConsulOp.kvSet(key, value))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case KvGet(key: String) =>
       val task: Task[Option[String]] = helm.run(interpreter, ConsulOp.kvGet(key))
-      sender ! task.attemptRunFor(5000L)
+        sender ! task.attemptRunFor(5000L).valueOr(throw _).get
 
     case KvDelete(key: String) =>
       val task: Task[Unit] = helm.run(interpreter, ConsulOp.kvDelete(key))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case KvListKeys(prefix: String) =>
       val task: Task[Set[String]] = helm.run(interpreter, ConsulOp.kvListKeys(prefix))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case HealthListChecksForService(service: String,
                                     datacenter: Option[String],
@@ -46,12 +46,12 @@ class ConsulActor(settings: ConsulSettings) extends HActor with ComponentHelper{
                                     nodeMeta: Option[String]) =>
       val task: Task[List[HealthCheckResponse]] = helm.run(interpreter, ConsulOp.healthListChecksForService(service,
                                                            datacenter, near, nodeMeta))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case HealthListChecksForNode(node: String, datacenter: Option[String]) =>
       val task: Task[List[HealthCheckResponse]] = helm.run(interpreter, ConsulOp.healthListChecksForNode(node,
                                                            datacenter))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case HealthListNodesForService(service: String,
                                    datacenter: Option[String],
@@ -66,7 +66,7 @@ class ConsulActor(settings: ConsulSettings) extends HActor with ComponentHelper{
                                                                                                         nodeMeta,
                                                                                                         tag,
                                                                                                         passingOnly))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case AgentListServices =>
       val task: Task[Map[String,ServiceResponse]] = helm.run(interpreter, ConsulOp.agentListServices)
@@ -82,10 +82,10 @@ class ConsulActor(settings: ConsulSettings) extends HActor with ComponentHelper{
                               checks: Option[NonEmptyList[HealthCheckParameter]]) =>
       val task: Task[Unit] = helm.run(interpreter, ConsulOp.agentRegisterService(service, id, tags, address, port,
                                                                                  enableTagOverride, check, checks))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
 
     case AgentDeregisterService(id: String) =>
       val task: Task[Unit] = helm.run(interpreter, ConsulOp.agentDeregisterService(id))
-      sender ! task.attemptRunFor(5000L)
+      sender ! task.attemptRunFor(5000L).valueOr(throw _)
   }
 }

@@ -4,7 +4,6 @@ import akka.actor.ActorRef
 import com.webtrends.harness.component.Component
 
 trait Consul { this: Component =>
-
   implicit val consulSettings:ConsulSettings
 
   var ConsulRef:Option[ActorRef] = None
